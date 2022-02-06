@@ -177,13 +177,3 @@ class TicTacToe {
     });
   }
 }
-
-let state: gameState = {
-  board: [
-    [0, 0, 0],
-    [0, 0, 0],
-    [0, 0, 0],
-  ],
-  winner: 0,
-  currentPlayer: 1,
-};
