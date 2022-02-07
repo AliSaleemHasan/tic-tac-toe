@@ -14,40 +14,40 @@ import { gameState } from "../types/TicTacToe";
 // winning COMBOS
 let WINNING_COMBOS = [
   [
-    // first column
+    // first row
     [0, 0],
     [0, 1],
     [0, 2],
   ],
   [
-    // second column
+    // second row
     [1, 0],
     [1, 1],
     [1, 2],
-  ],
-  [
-    // third column
-    [2, 0],
-    [2, 1],
-    [2, 2],
-  ],
-  [
-    // first row
-    [1, 0],
-    [2, 0],
-    [3, 0],
-  ],
-  [
-    // second row
-    [1, 1],
-    [2, 1],
-    [3, 1],
   ],
   [
     // third row
+    [2, 0],
+    [2, 1],
+    [2, 2],
+  ],
+  [
+    // first column
+    [0, 0],
+    [1, 0],
+    [2, 0],
+  ],
+  [
+    // second column
+    [0, 1],
+    [1, 1],
+    [2, 1],
+  ],
+  [
+    // third column
+    [0, 2],
     [1, 2],
     [2, 2],
-    [3, 2],
   ],
   [
     // main diameter
@@ -64,12 +64,12 @@ let WINNING_COMBOS = [
 ];
 
 // check if one of the WINNING_COMBOS is fulfilled
-function checkWinning(
+function checkWinner(
   this: number[][],
   block1: number[],
   block2: number[],
   block3: number[]
-) {
+): number {
   let board = this;
   let player = board[block1[0]][block1[1]];
   if (
@@ -82,15 +82,26 @@ function checkWinning(
   return 0;
 }
 
-function // get all avaliable spaces in current state (will help with minimax algorithm)
-freeSpaces(board: number[][]) {
-  let spaces = [];
-  for (let i = 0; i < 3; i++)
-    for (let j = 0; j < 3; j++) if (board[i][j]) spaces.push([i, j]);
+function getWinner(this: TicTacToe): number {
+  let comboIndex = WINNING_COMBOS.length - 1;
+  let winner = 0;
 
-  return spaces;
+  do {
+    winner = checkWinner.call(
+      this.board,
+      WINNING_COMBOS[comboIndex][0],
+      WINNING_COMBOS[comboIndex][1],
+      WINNING_COMBOS[comboIndex][2]
+    );
+    comboIndex = comboIndex - 1;
+  } while (!winner && comboIndex);
+
+  // if game ends (there is no freeSpaces left) , and there is no winner then
+  // game status is draw (0)
+  return this.freeSpaces.length === 0 && !winner ? -1 : winner;
 }
-class TicTacToe {
+
+export class TicTacToe {
   gameState: gameState;
   constructor(state?: gameState) {
     this.gameState = this.reset(state);
@@ -113,24 +124,6 @@ class TicTacToe {
   //   helpers
 
   // get winner for the certain state
-  getWinner(this: number[][]) {
-    let comboIndex = WINNING_COMBOS.length - 1;
-    let winner = 0;
-
-    do {
-      winner = checkWinning.call(
-        this,
-        WINNING_COMBOS[comboIndex][0],
-        WINNING_COMBOS[comboIndex][1],
-        WINNING_COMBOS[comboIndex][2]
-      );
-      comboIndex = comboIndex - 1;
-    } while (!winner && !WINNING_COMBOS);
-
-    // if game ends (there is no freeSpaces left) , and there is no winner then
-    // game status is draw (0)
-    return freeSpaces(this).length === 0 && !winner ? 0 : winner;
-  }
 
   //  reset function
   reset(state?: gameState) {
@@ -148,6 +141,15 @@ class TicTacToe {
     return this.gameState;
   }
 
+  // get all avaliable spaces in current state (will help with minimax algorithm)
+  get freeSpaces() {
+    let spaces = [];
+    for (let i = 0; i < 3; i++)
+      for (let j = 0; j < 3; j++) if (!this.board[i][j]) spaces.push([i, j]);
+
+    return spaces;
+  }
+
   //   perform a move (player or computer)
 
   move(x: number, y: number) {
@@ -155,7 +157,7 @@ class TicTacToe {
     if (this.board[x][y] || this.winner) return this.gameState;
 
     this.gameState.board[x][y] = this.currentPlayer;
-    this.gameState.winner = this.getWinner.call(this.board);
+    this.gameState.winner = getWinner.call(this);
     this.gameState.currentPlayer = this.gameState.currentPlayer === 1 ? 2 : 1;
 
     return this.gameState;
@@ -163,12 +165,12 @@ class TicTacToe {
 
   //   clone move to help with minimax function
   cloneMove(x: number, y: number) {
-    if (this.board[x][y] || this.winner) return this.gameState;
+    if (this.board[x][y] || this.winner) return this;
 
     let board = this.board.map((row) => row.slice());
     board[x][y] = this.currentPlayer;
     let currentPlayer: 1 | 2 = this.currentPlayer === 1 ? 2 : 1;
-    let winner = this.getWinner.call(board);
+    let winner = getWinner.call(this);
 
     return new TicTacToe({
       board,
