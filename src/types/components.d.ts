@@ -1,10 +1,8 @@
 // types for all TicTacToe related Components
 // TicTacToe.tsc , Row.tsx and Block.tsx
 
-import { gameState } from "./TicTacToe";
-
 export interface TicTacToeProps {
-  gameState: gameState;
+  board: number[][];
 }
 
 export interface RowProps {

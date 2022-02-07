@@ -14,7 +14,7 @@ const gametate: gameState = {
 function App() {
   return (
     <div className="w-screen h-screen bg-main-blue flex flex-col">
-      <TicTacToe gameState={gametate} />
+      <TicTacToe board={gametate.board} />
       {/* TicTacToe */}
       {/* has 3 Rows */}
       {/* has 3 Blocks */}
